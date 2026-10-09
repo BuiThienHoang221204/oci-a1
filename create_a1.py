@@ -113,6 +113,17 @@ def done(inst):
 
 def main():
     once = "--once" in sys.argv
+    while True:
+        try:
+            return run(once)
+        except oci.exceptions.RequestException as e:
+            log(f"Lỗi mạng tới Oracle — {str(e)[:120]}")
+            if once:
+                return 0
+            time.sleep(INTERVAL_S)
+
+
+def run(once):
     found = existing()
     if found:
         return done(found)
@@ -144,6 +155,8 @@ def main():
                 log(f"Lần {attempt}: lỗi khác {e.status} {e.code}: {msg}")
             if existing():
                 return done(existing())
+        except oci.exceptions.RequestException as e:
+            log(f"Lần {attempt}: lỗi mạng tới Oracle, thử lại lượt sau — {str(e)[:120]}")
         if once:
             return 0
         time.sleep(INTERVAL_S)
