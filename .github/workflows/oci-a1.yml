@@ -1,0 +1,47 @@
+# Thử tạo máy A1 Always Free trên Oracle mỗi ~5 phút. Lượt chạy ĐỎ = máy đã sẵn sàng (để GitHub gửi email) — xem Summary lấy IP rồi TẮT workflow này.
+name: oci-a1
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: oci-a1
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  try-create:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install --quiet oci
+
+      - name: Ghi cấu hình OCI từ Secrets
+        env:
+          OCI_CONFIG: ${{ secrets.OCI_CONFIG }}
+          OCI_API_KEY: ${{ secrets.OCI_API_KEY }}
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_API_KEY" > ~/.oci/oci_api_key.pem
+          printf '%s\n' "$OCI_CONFIG" | sed "s#^key_file=.*#key_file=$HOME/.oci/oci_api_key.pem#" > ~/.oci/config
+          chmod 600 ~/.oci/*
+
+      - name: Thử tạo máy
+        env:
+          SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+        run: |
+          set +e
+          python create_a1.py --once
+          code=$?
+          if [ "$code" = 3 ]; then echo "::error::Máy A1 đã sẵn sàng — xem Summary để lấy IP, rồi tắt workflow oci-a1"; exit 1; fi
+          if [ "$code" != 0 ]; then echo "::error::Script dừng với mã $code — cần người xem log"; exit 1; fi
