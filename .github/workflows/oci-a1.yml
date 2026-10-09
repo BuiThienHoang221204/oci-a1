@@ -43,5 +43,6 @@ jobs:
           set +e
           python create_a1.py --once
           code=$?
+          [ -f create_a1.log ] && echo "::notice title=Kết quả::$(tail -1 create_a1.log)"
           if [ "$code" = 3 ]; then echo "::error::Máy A1 đã sẵn sàng — xem Summary để lấy IP, rồi tắt workflow oci-a1"; exit 1; fi
           if [ "$code" != 0 ]; then echo "::error::Script dừng với mã $code — cần người xem log"; exit 1; fi
