@@ -1,9 +1,9 @@
-# Thử tạo máy A1 Always Free trên Oracle mỗi ~5 phút. Lượt chạy ĐỎ = máy đã sẵn sàng (để GitHub gửi email) — xem Summary lấy IP rồi TẮT workflow này.
+# Thử tạo máy A1 Always Free trên Oracle mỗi ~6 phút (phút lẻ, tránh giờ tròn). Lượt chạy ĐỎ = máy đã sẵn sàng (để GitHub gửi email) — xem Summary lấy IP rồi TẮT workflow này.
 name: oci-a1
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '3-59/6 * * * *'
   workflow_dispatch:
 
 concurrency:
